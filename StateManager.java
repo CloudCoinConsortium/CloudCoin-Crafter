@@ -72,28 +72,31 @@ public class StateManager
         //bank_mode.setCommand("drag chest-icon[i]-to-vault");
         //bank_mode.setCommand("drag jpge-icon[i]-to-vault");
         bank_mode.setCommand("drag chest-icon[i] to chest-icon[i]");
-        bank_mode.setCommand("drag jpge-icon[i] to chest");
+        //bank_mode.setCommand("drag jpge-icon[i] to chest");
         bank_mode.setCommand("quit");
+        bank_mode.setCommand("list chests");
         
+        
+        import_mode.setCommand("list chests");
         import_mode.setCommand("click loadfiles");
-        import_mode.setCommand("click passphrase");
-        import_mode.setCommand("click textbox");
+        //import_mode.setCommand("click passphrase");
+        import_mode.setCommand("click tag-chest");
         import_mode.setCommand("click bank-tab");
         
         import_mode.setCommand("doubleclick chest");
-        import_mode.setCommand("doubleclick notestack[i]");
+        //import_mode.setCommand("doubleclick notestack[i]");
         import_mode.setCommand("doubleclick resultsbox");
         
         
         import_mode.setCommand("drag chest-to-high-security");
-        import_mode.setCommand("drag chest-to-simple-security");
-        import_mode.setCommand("drag chest-to-passphrase-security");
+       // import_mode.setCommand("drag chest-to-simple-security");
+       // import_mode.setCommand("drag chest-to-passphrase-security");
         import_mode.setCommand("drag chest[i]-to-bank");
         
-        import_mode.setCommand("drag jpeg-to-high-security");
-        import_mode.setCommand("drag jpeg-to-simple-security");
-        import_mode.setCommand("drag jpeg-to-passphrase-security");
-        import_mode.setCommand("drag jpeg[i]-to-bank");
+        //import_mode.setCommand("drag jpeg-to-high-security");
+        //import_mode.setCommand("drag jpeg-to-simple-security");
+       // import_mode.setCommand("drag jpeg-to-passphrase-security");
+       // import_mode.setCommand("drag jpeg[i]-to-bank");
         import_mode.setCommand("escape");
         import_mode.setCommand("quit");
         

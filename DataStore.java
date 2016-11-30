@@ -104,6 +104,14 @@ public class DataStore
 
     }//end constructor
     
+    public void refreshFileList(){
+     bankChestFileNames = selectAllFileNamesInFolder("Bank/Chests/");
+     importChestFileNames = selectAllFileNamesInFolder("Bank/Income/Chests/");
+     frackedChestName= selectFirstFileNameInFolder("Bank/Fracked/");
+    }//end refresh 
+    
+    
+    
     public int[][] selectRegister( String chestPath ){
         int n = 5;//Need to open files and look in them using JSON
      int[][] raggedArray = new int[n][];
