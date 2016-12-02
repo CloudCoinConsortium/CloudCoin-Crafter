@@ -119,17 +119,9 @@ public class State{
      * @return the available commands based on the contents of the room. 
      */
     public String[] getCommands() {
-
-       // for( int i =0 ; i < doors.size(); i++ )
-       // {
-       //     commandList.add("go " + doors.get(i).name ) ;
-    //
-      //  }
-
-        //Get gocommands
-
-        String[] returnCommands = new String[ commandList.size() ];
-        return commandList.toArray(returnCommands);
+        String[] returnCommands = {};
+	    returnCommands= commandList.toArray(returnCommands);
+        return returnCommands;
     }
 
 }//end room

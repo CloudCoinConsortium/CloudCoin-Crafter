@@ -50,56 +50,27 @@ public class StateManager
         chest_mode.setDoor("bank", bank_mode );
 
         
+        /*Splash mode*/  
         splash_mode.setCommand("click start");
         splash_mode.setCommand("quit");
-       // splash_mode.setCommand("click end");
         
-       // bank_mode.setCommand("click vault-tab");
-       // bank_mode.setCommand("click lost-tab");
-        bank_mode.setCommand("click fracked-tab");
-        bank_mode.setCommand("click empty-chest-square");
-        bank_mode.setCommand("click chest[i]");
-        bank_mode.setCommand("click new-chest-tool");
-        bank_mode.setCommand("click add-tag-tool");
-        bank_mode.setCommand("click server-status-refresh");
-        
-        bank_mode.setCommand("doubleclick import-icon");
-        bank_mode.setCommand("doubleclick delete-icon");
-        bank_mode.setCommand("doubleclick chest-icon[i]");
-        
-        bank_mode.setCommand("drag chest-icon[i]-to-export");
-        bank_mode.setCommand("drag jpge-icon[i]-to-export");
-        //bank_mode.setCommand("drag chest-icon[i]-to-vault");
-        //bank_mode.setCommand("drag jpge-icon[i]-to-vault");
-        bank_mode.setCommand("drag chest-icon[i] to chest-icon[i]");
-        //bank_mode.setCommand("drag jpge-icon[i] to chest");
+       /*bank mode*/  
+        bank_mode.setCommand("loadfiles keep ans");
+        bank_mode.setCommand("loadfiles change ans");
+        bank_mode.setCommand("fracked");
+        bank_mode.setCommand("export");
+        bank_mode.setCommand("show raida");
         bank_mode.setCommand("quit");
-        bank_mode.setCommand("list chests");
-        
-        
-        import_mode.setCommand("list chests");
-        import_mode.setCommand("click loadfiles");
-        //import_mode.setCommand("click passphrase");
+
+        /*Import mode*/   
+        import_mode.setCommand("list coins");
+        import_mode.setCommand("loadfiles");
         import_mode.setCommand("click tag-chest");
         import_mode.setCommand("click bank-tab");
-        
-        import_mode.setCommand("doubleclick chest");
-        //import_mode.setCommand("doubleclick notestack[i]");
-        import_mode.setCommand("doubleclick resultsbox");
-        
-        
-        import_mode.setCommand("drag chest-to-high-security");
-       // import_mode.setCommand("drag chest-to-simple-security");
-       // import_mode.setCommand("drag chest-to-passphrase-security");
-        import_mode.setCommand("drag chest[i]-to-bank");
-        
-        //import_mode.setCommand("drag jpeg-to-high-security");
-        //import_mode.setCommand("drag jpeg-to-simple-security");
-       // import_mode.setCommand("drag jpeg-to-passphrase-security");
-       // import_mode.setCommand("drag jpeg[i]-to-bank");
         import_mode.setCommand("escape");
         import_mode.setCommand("quit");
         
+        /*Fracked mode*/  
         fracked_mode.setCommand("click bank-tab");
         //fracked_mode.setCommand("click vault-tab");
         //fracked_mode.setCommand("click lost-tab");
