@@ -1,6 +1,7 @@
 import java.security.SecureRandom;
 import java.io.*;
 import java.util.Scanner;
+import java.io.File;
 /**
  * Creats a CloudCoin
  * 
@@ -14,10 +15,10 @@ public class CloudCoin
     public int sn;//Serial Number
     public String[] ans ;//Authenticity Numbers
     public String[] pans;//Proposed Authenticty Numbers
+    public String[] pastStatus;//fail, pass, error, unknown (could not connect to raida)
     public String ed; //Expiration Date
-    public int lhs[];//Last Known Health Status (one for each server)
+    public int hp;//HitPoints (1-25, One point for each server passed)
     public String aoid;//Account or Owner ID
-    public String coinText;
     public String fileName;
 
     /**
@@ -32,37 +33,65 @@ public class CloudCoin
         switch(security){
             case "change"://change pans
             this.pans = new String[25];
+            this.pastStatus = new String[25];
             for(int i = 0; i < 25; i++ ){
                 pans[i] = generatePan();
+                pastStatus[i]= "unknown";
             }
             break;
             case "keep"://keep the current ans the same
             this.pans = new String[25];
+            this.pastStatus = new String[25];
             for(int i = 0; i < 25; i++ ){
                 pans[i] = ans[i];
+                pastStatus[i]= "unknown";
             }
             break;
         }
 
         this.ed = ed;
-        this.lhs = lhs;
+        this.hp = 0;
         this.aoid = aoid;
-
-        coinText = nn +"<>";
-        coinText += sn +"<>";
-        for(int ii = 0; ii< 25; ii++){
-            coinText += ans[ii] +"<>";
-        }//end for each an
-
-        for(int iii = 0; iii< 25; iii++){
-            coinText += pans[iii] +"<>";
-        }//end for each an
-        coinText += ed +"<>";
-        coinText += lhs +"<>";
-        coinText += aoid;
 
         this.fileName = getDenomination() +".CloudCoin." + this.nn +"."+ this.sn + ".";
     }
+
+    public CloudCoin( String fileName){
+        System.out.println("Loading file ./Bank/" + fileName);
+        try{
+            String fileContents = fileToString( "./Bank/"+fileName );
+            System.out.println(fileContents);
+
+            String[] parts = fileContents.split("<>");
+            System.out.println("Length of parts " + parts.length);
+
+            this.nn =  Integer.parseInt(parts[0]);
+            this.sn =  Integer.parseInt(parts[1]);
+            ans = new String[25];
+            for(int i = 0; i < 25; i++){
+                this.ans[i] =  parts[i+2];
+                // System.out.println("Part " + (i+2) + ": " + parts[i+2] );
+            }//end for each an
+            pans = new String[25];
+            for(int j = 0; j< 25; j++){
+                this.pans[j] =  parts[j+2+25];
+                //  System.out.println("Part " + (j+2+25) + ": " + parts[j+2+25] );
+            }//end for each an
+            this.ed =  parts[52];
+            this.hp =  Integer.parseInt(parts[53]);
+            this.pastStatus = new String[25];
+            for(int k = 0; k < 25; k++){
+                this.pastStatus[k] =  parts[k+54];
+                // System.out.println("Part " + (i+2) + ": " + parts[i+2] );
+            }//end for each an
+            this.aoid =  parts[79];
+            this.fileName = getDenomination() +".CloudCoin." + this.nn +"."+ this.sn + ".";
+        }catch(IOException e){
+            System.out.println(e);
+        }
+
+    }//end new cc based on file content
+
     /**
      * Returns the denomination of the money based on the serial number
      * 
@@ -94,14 +123,29 @@ public class CloudCoin
 
     public boolean saveCoin( String extension ){
         boolean goodSave = false;
+        String coinText = nn +"<>";
+        coinText += sn +"<>";
+        for(int ii = 0; ii< 25; ii++){
+            coinText += ans[ii] +"<>";
+        }//end for each an
+
+        for(int iii = 0; iii< 25; iii++){
+            coinText += pans[iii] +"<>";
+        }//end for each an
+        coinText += ed +"<>";
+        coinText += hp +"<>";
+        for(int i = 0; i< 25; i++){
+            coinText += pastStatus[i] +"<>";
+        }//end for each an
+        coinText += aoid +"<>";
+
         BufferedWriter writer = null;
         try
         {
             writer = new BufferedWriter( new FileWriter( "./Bank/" + this.fileName + extension ));
-            System.out.println("Saving Coin file to Bank/" + this.fileName + extension );
-            writer.write( this.coinText );
+            System.out.println("\nSaving Coin file to Bank/" + this.fileName + extension );
+            writer.write( coinText );
             goodSave = true;
-
         }
         catch ( IOException e)
         {
@@ -120,6 +164,24 @@ public class CloudCoin
         return goodSave;
     }
 
+    public boolean deleteCoin( String extension ){
+        boolean deleted = false;
+        File f  = new File( "./Bank/" + this.fileName + extension);
+        try {
+            deleted = f.delete();
+            if(deleted){
+                System.out.println(f.getName() + " is deleted!");
+            }else{
+                System.out.println("Delete operation is failed.");
+            }//end else
+        }catch(Exception e){
+
+            e.printStackTrace();
+
+        }
+        return deleted;
+    }//end delete file
+
     public String fileToString(String pathname) throws IOException {
 
         File file = new File(pathname);
@@ -137,4 +199,23 @@ public class CloudCoin
         }
         return fileContents.toString();
     }
+
+    public void calculateHP(){
+         this.hp = 0;
+        for( int i = 0; i< 25; i++){
+            if( this.pastStatus[i].equalsIgnoreCase("pass")   )
+            { 
+                this.hp++;
+            }
+        }
+
+    }//End calculate hp
+    
+     public void reportStatus(){
+System.out.println("NN:"+this.nn+", SN: " + this.sn );
+        for( int i = 0; i< 25; i++){
+                System.out.println( i +"'s status is "+ this.pastStatus[i] );
+        }
+
+    }//End report status
 }

@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,8 +18,13 @@ import java.time.*;
 public class RAIDA
 {
     // instance variables
+    public int[] trustedServes = new int[8];
+    public int[] trustedTriad1;
+    public int[] trustedTriad2;
+    public int[] trustedTriad3;
+    public int[] trustedTriad4;
+
     public int RAIDANumber;
-    public int[] trustedServers = new int[4];
     public String url;
     public String bkurl; //backup url
     public String name; 
@@ -29,29 +36,37 @@ public class RAIDA
     public String img; //img url
     public String protocol; //http or https
     public int port; //80 or 443
-    public String lastMessage = null;
+    public String lastJsonRaFromServer = null;
     public String lastTicket = null;
     public String fullUrl;
-    public String lastDetectStatus = null;//error, unknown, pass, fail
-    public String lastDetectSn = null;//error, unknown, pass, fail
-    public String lastTicketStatus = null;//ticket, fail, error
+    public String lastDetectStatus = "notdetected";//error, notdetected, pass, fail
+    //public String lastDetectSn = null;//error, unknown, pass, fail
+    public String lastTicketStatus = "empty";//ticket, fail, error
+    public String lastFixStatus = "empty";//ticket, fail, error
 
     /**
      * Constructor for objects of class RAIDA
      */
-    public RAIDA(int RAIDANumber, String url, String bkurl, String name, String status, int ms, String ext, String location, String img, String protocol, int port )
+    public RAIDA(String url, String bkurl, String name, String status, int ms, String ext, String location, String img, String protocol, int port )
     {
         // initialise instance variables
-        this.RAIDANumber = RAIDANumber;
-        this.trustedServers[0]= RAIDANumber - 5;
-        this.trustedServers[1]= RAIDANumber - 1;
-        this.trustedServers[2]= RAIDANumber + 1;
-        this.trustedServers[3]= RAIDANumber + 5;
+        String raidaNumberString = name.replace("RAIDA","");
+        RAIDANumber = Integer.parseInt( raidaNumberString );
         //Calculate the Trusted Servers
-        if(  this.trustedServers[0] < 0 ){ trustedServers[0] += 25;  }//end if 
-        if(  this.trustedServers[1] < 0 ){ trustedServers[1] += 25; }//end if 
-        if(  this.trustedServers[2] > 24 ){ trustedServers[2] -= 25;  }//end if 
-        if(  this.trustedServers[3] > 24 ){ trustedServers[3] -= 25;  }//end if 
+        // Calculate the 8 trusted servers that are directly attached to broken RAIDA
+        trustedServes[0] = (RAIDANumber - 6) % 25;//Trusted server 1 is the id of your servers minus 6 mod 25.
+        trustedServes[1] = (RAIDANumber - 5) % 25;
+        trustedServes[2] = (RAIDANumber - 4) % 25;
+        trustedServes[3] = (RAIDANumber - 1) % 25;
+        trustedServes[4] = (RAIDANumber + 1) % 25;
+        trustedServes[5] = (RAIDANumber + 4) % 25;
+        trustedServes[6] = (RAIDANumber + 5) % 25;
+        trustedServes[7] = (RAIDANumber + 6) % 25;
+
+        trustedTriad1 = new int[]{trustedServes[0] , trustedServes[1] , trustedServes[3] };
+        trustedTriad2 = new int[]{trustedServes[1] , trustedServes[2] , trustedServes[4] };
+        trustedTriad3 = new int[]{trustedServes[3] , trustedServes[5] , trustedServes[6] };
+        trustedTriad4 = new int[]{trustedServes[4] , trustedServes[6] , trustedServes[7] };
 
         this.url = url;
         this.bkurl = bkurl;
@@ -98,41 +113,97 @@ public class RAIDA
 
     public void detect(CloudCoin cc ){
         if( this.status.equals("ready")){
-        
+
             String html ="error";
             String url = this.fullUrl + "detect." + this.ext + "?nn=" + cc.nn + "&sn=" + cc.sn + "&an=" + cc.ans[RAIDANumber] + "&pan=" + cc.pans[RAIDANumber]  + "&denomination=" + cc.getDenomination();
-            //System.out.println( url );
+            // System.out.print( ".  Raida number " + RAIDANumber );
             Instant before = Instant.now();
             try{
                 html = getHtml(url);
+                //  System.out.println( html );
             }catch( IOException ex ){
                 System.out.println( ex );
                 lastDetectStatus = "error";
             }
             Instant after = Instant.now();
-            this.lastMessage = html;
+            this.lastJsonRaFromServer = html;
             this.dms = Duration.between(before, after).toMillis();
             if( html.contains("pass") ){ 
                 lastDetectStatus = "pass";
             }else if( html.contains("fail") ){  lastDetectStatus = "fail"; 
             }else { lastDetectStatus = "error"; }
         }//end if status not ready. 
-    }//end echo
+    }//end detect
 
-    public String get_ticket(CloudCoin cc ){
-        String status = "unkown";
-        String url = fullUrl + "get_ticket" + this.ext + "?nn=" + cc.nn + "&sn=" + cc.sn + "&an=" + cc.ans[RAIDANumber] + "&pan=" + cc.pans[RAIDANumber]  + "&denomination=" + cc.getDenomination();
-
+    public void get_ticket( String an, int nn, int sn, int denomination  ){
+        this.lastTicket = "none";
+        String url = fullUrl + "get_ticket."+this.ext+"?nn="+nn+"&sn="+sn+"&an="+an+"&pan=" +an+ "&denomination="+denomination;
         System.out.println( url );
-        return status;
-    }//end echo
 
-    public String fix( int s1, String m1, int s2, String m2, String pan  ){
-        String status = "unkown";
-        String url = fullUrl + "fix" + this.ext + "?fromserver1="+ s1 +"&message1=" + m1 + "&fromserver2="+s2+"&message2=" + m2 + "&pan=" + pan ;
+        String html = "";
+        Instant before = Instant.now();
+        try{
+            html = getHtml(url);
+            JSONObject o = new JSONObject( html );
+            this.lastTicketStatus = o.getString("status");
+            String message = o.getString("message");
+            if (this.lastTicketStatus.equalsIgnoreCase("ticket") ){
+                this.lastTicket = message;
+
+            }//end if
+            //  System.out.println( html );
+        }catch( JSONException ex ){
+            System.out.println( "Error in RAIDA get_ticket() " +ex );
+
+        }catch( MalformedURLException ex ){
+            System.out.println( "Error in RAIDA get_ticket() " +ex );
+        } catch( IOException ex ){
+            System.out.println( "Error in RAIDA get_ticket() " +ex );
+        }
+        Instant after = Instant.now();
+        this.lastJsonRaFromServer = html;
+        this.dms = Duration.between(before, after).toMillis();
+        System.out.println(html);
+    }//end get ticket
+
+    public String fix( int[] ans, String m1,String m2, String m3, String pan ){
+        this.lastFixStatus = "error"; 
+        
+        int f1 = ans[0];
+        int f2 = ans[1];
+        int f3 = ans[2];
+        String url = fullUrl;
+        url += "fix."+this.ext+"?fromserver1="+f1+"&message1="+m1+"&fromserver2="+f2+"&message2="+m2+"&fromserver3="+f3+"&message3="+m3+"&pan="+pan;
         System.out.println( url );
-        return status;
-    }//end echo
+
+        /*try {
+            System.in.read();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }*/
+        String html = "";
+        Instant before = Instant.now();
+        try{
+            html = getHtml(url);
+            System.out.println( html );
+        }catch( MalformedURLException ex ){//quit
+            
+            System.out.println( "Error in RAIDA fix() " +ex );
+        } catch( IOException ex ){
+            System.out.println( "Error in RAIDA fix() " +ex );
+        }
+        Instant after = Instant.now();
+        this.lastJsonRaFromServer = html;
+        this.dms = Duration.between(before, after).toMillis();
+        if( html.contains("success") ){ 
+            this.lastFixStatus = "success"; 
+        }
+        this.lastJsonRaFromServer = html;
+        this.dms = Duration.between(before, after).toMillis();
+
+        return this.lastFixStatus;
+    }//end fixit
 
     public String getHtml(String url_in) throws MalformedURLException, IOException {
         int c;

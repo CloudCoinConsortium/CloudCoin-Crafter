@@ -51,12 +51,12 @@ public class StateManager
 
         
         /*Splash mode*/  
-        splash_mode.setCommand("click start");
+        splash_mode.setCommand("start");
         splash_mode.setCommand("quit");
         
        /*bank mode*/  
-        bank_mode.setCommand("loadfiles keep ans");
-        bank_mode.setCommand("loadfiles change ans");
+        bank_mode.setCommand("import");
+       // bank_mode.setCommand("loadfiles change ans");
         bank_mode.setCommand("fracked");
         bank_mode.setCommand("export");
         bank_mode.setCommand("show raida");
@@ -71,14 +71,8 @@ public class StateManager
         import_mode.setCommand("quit");
         
         /*Fracked mode*/  
+        fracked_mode.setCommand("fix fracked");
         fracked_mode.setCommand("click bank-tab");
-        //fracked_mode.setCommand("click vault-tab");
-        //fracked_mode.setCommand("click lost-tab");
-        fracked_mode.setCommand("click up-arrow[i]");
-        fracked_mode.setCommand("click down-arrow[i]");
-        
-        fracked_mode.setCommand("doubleclick coin[i][i]");
-        fracked_mode.setCommand("drag coin[i][i]-to-repair");
         fracked_mode.setCommand("quit");
         
         
